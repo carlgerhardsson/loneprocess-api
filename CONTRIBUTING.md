@@ -79,4 +79,4 @@ Docs: uppdaterad API_EXAMPLES.md
 
 ## Frågor?
 
-Kontakta backend-teamet på support@loneprocess.se
+Kontakta backend-teamet på support@loneprocess.se och ring
