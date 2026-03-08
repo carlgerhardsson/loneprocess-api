@@ -1,273 +1,193 @@
-# 🚀 Löneprocess Digital Checklista API
+# Löneprocess Digital Checklista API v3.0
 
-En komplett REST API för hantering av löneprocessaktiviteter och löneperioder, byggd med FastAPI och SQLite.
+**Komplett FastAPI backend för löneprocesshantering med LA-integration**
 
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-009688.svg?style=flat&logo=FastAPI&logoColor=white)](https://fastapi.tiangolo.com)
-[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg?style=flat&logo=python&logoColor=white)](https://www.python.org)
-[![License](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
+## 🚀 Vad är nytt i v3.0?
 
-## 📋 Innehåll
+### ✨ Modulär Struktur
+- Uppdelat i logiska moduler för bättre underhåll
+- Lättare att hitta och uppdatera kod
+- Production-ready arkitektur
 
-- [Snabbstart](#-snabbstart)
-- [Features](#-features)
-- [Dokumentation](#-dokumentation)
-- [Installation](#-installation)
-- [API Endpoints](#-api-endpoints)
-- [För Frontend-teamet](#-för-frontend-teamet)
-- [Databas](#-databas)
-- [Utveckling](#-utveckling)
+### 🔴 Nya Funktioner (från v2.1)
+- **FELLISTOR** - Hantera fel från löneberäkningar (Must-have!)
+- **KÖRNINGSSTATUS** - Status för provlön och slutlön (Must-have!)
 
-## ⚡ Snabbstart
-
-```bash
-# 1. Klona repo
-git clone https://github.com/[ditt-username]/loneprocess-api.git
-cd loneprocess-api
-
-# 2. Installera dependencies
-pip install -r requirements.txt
-
-# 3. Starta servern
-python standalone_api.py
-```
-
-**Öppna Swagger UI:** http://localhost:8000/docs 🎉
-
-## ✨ Features
-
-- ✅ **FastAPI** - Modern, snabb Python web framework
-- ✅ **SQLite** - Lokal databas (ingen setup behövs!)
-- ✅ **Swagger UI** - Interaktiv API dokumentation
-- ✅ **OpenAPI 3.1.0** - Automatiskt genererad spec
-- ✅ **CORS** - Aktiverad för frontend integration
-- ✅ **Pydantic** - Data validering och serialisering
-- ✅ **Sample Data** - Färdig testdata inkluderad
-
-## 📚 Dokumentation
-
-När servern körs:
-
-- **Swagger UI (Interaktiv):** http://localhost:8000/docs
-- **ReDoc (Läsbar):** http://localhost:8000/redoc  
-- **OpenAPI JSON:** http://localhost:8000/openapi.json
-
-Offline dokumentation:
-- [API Examples](docs/API_EXAMPLES.md) - Request/response exempel
-- [Error Codes](docs/ERROR_CODES.md) - Felhantering
-- [Frontend Integration](docs/FRONTEND_INTEGRATION.md) - Guide för frontend
-
-## 🔧 Installation
-
-### Krav
-
-- Python 3.8 eller nyare
-- pip
-
-### Steg-för-steg
-
-#### 1. Klona repository
-
-```bash
-git clone https://github.com/[ditt-username]/loneprocess-api.git
-cd loneprocess-api
-```
-
-#### 2. (Valfritt) Skapa virtual environment
-
-```bash
-# Mac/Linux
-python3 -m venv venv
-source venv/bin/activate
-
-# Windows
-python -m venv venv
-venv\Scripts\activate
-```
-
-#### 3. Installera dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-#### 4. Starta servern
-
-```bash
-python standalone_api.py
-```
-
-Servern startar på http://localhost:8000
-
-## 📡 API Endpoints
-
-### Activities (Aktiviteter)
-
-| Method | Endpoint | Beskrivning |
-|--------|----------|-------------|
-| GET | `/api/v1/activities` | Hämta alla aktiviteter (med filtrering) |
-| GET | `/api/v1/activities/{id}` | Hämta specifik aktivitet |
-| POST | `/api/v1/activities` | Skapa ny aktivitet |
-| PUT | `/api/v1/activities/{id}` | Uppdatera aktivitet |
-| DELETE | `/api/v1/activities/{id}` | Ta bort aktivitet |
-
-### Loneperiods (Löneperioder)
-
-| Method | Endpoint | Beskrivning |
-|--------|----------|-------------|
-| GET | `/api/v1/loneperiods` | Hämta alla löneperioder |
-| GET | `/api/v1/loneperiods/{id}` | Hämta specifik löneperiod |
-| POST | `/api/v1/loneperiods` | Skapa ny löneperiod |
-| PUT | `/api/v1/loneperiods/{id}` | Uppdatera löneperiod |
-| GET | `/api/v1/loneperiods/{id}/progress` | Hämta framdrift |
-| POST | `/api/v1/loneperiods/{id}/activities` | Lägg till aktiviteter |
-
-### Health
-
-| Method | Endpoint | Beskrivning |
-|--------|----------|-------------|
-| GET | `/health` | Health check |
-| GET | `/` | API information |
-
-## 🎯 För Frontend-teamet
-
-### Quick Start
-
-```javascript
-// Base URL
-const API_URL = 'http://localhost:8000/api/v1';
-
-// Hämta aktiviteter
-const response = await fetch(`${API_URL}/activities`);
-const activities = await response.json();
-
-// Skapa aktivitet
-const newActivity = await fetch(`${API_URL}/activities`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({
-    process_nr: '10.9',
-    out_input: 'Test aktivitet',
-    roll: 'Lönespecialist'
-  })
-});
-```
-
-### TypeScript Types
-
-Se [Frontend Integration Guide](docs/FRONTEND_INTEGRATION.md) för kompletta TypeScript definitions.
-
-### Testing
-
-1. Starta backend: `python standalone_api.py`
-2. Öppna `docs/api_test.html` i browser för interaktiv testning
-
-## 🗄️ Databas
-
-### Schema
-
-**3 Tabeller:**
-- `activities` - Löneprocessaktiviteter
-- `loneperiods` - Löneperioder  
-- `assignments` - Koppling mellan löneperioder och aktiviteter
-
-### Sample Data
-
-Vid första start skapas automatiskt:
-- **5 aktiviteter** (ID 1-5)
-- **3 löneperioder** (Januari-Mars 2026)
-- **4 assignments** för testning av progress tracking
-
-### Databashantering
-
-Databasen sparas som `loneprocess.db` i projektets rot.
-
-**Visa data:**
-```bash
-sqlite3 loneprocess.db "SELECT * FROM activities;"
-```
-
-**Återställ databas:**
-```bash
-rm loneprocess.db
-python standalone_api.py  # Skapar ny med sample data
-```
-
-## 💻 Utveckling
-
-### Projektstruktur
+## 📁 Projektstruktur
 
 ```
 loneprocess-api/
-├── standalone_api.py          # Huvudapplikation
-├── requirements.txt           # Python dependencies
-├── loneprocess.db            # SQLite databas (skapas automatiskt)
-├── README.md                 # Denna fil
-├── docs/                     # Dokumentation
-│   ├── API_EXAMPLES.md
-│   ├── ERROR_CODES.md
-│   ├── FRONTEND_INTEGRATION.md
-│   └── api_test.html
-└── .gitignore
+├── config.py              # Konfiguration
+├── database.py            # Databas (SQLite)
+├── models.py              # Pydantic modeller
+├── main.py                # FastAPI app + alla endpoints
+├── requirements.txt       # Dependencies
+├── README.md              # Denna fil
+└── .env.example          # Environment variabler exempel
 ```
 
-### Köra i development mode
+## 🎯 Snabbstart
+
+### 1. Installera dependencies
 
 ```bash
-# Med auto-reload
-uvicorn standalone_api:app --reload
-
-# På annan port
-uvicorn standalone_api:app --port 8001
-
-# Tillgänglig från andra datorer
-uvicorn standalone_api:app --host 0.0.0.0
+pip install -r requirements.txt
 ```
 
-### Testning
+### 2. Starta servern
 
 ```bash
-# Enkel test
-curl http://localhost:8000/health
-
-# Testa alla endpoints
-open http://localhost:8000/docs
+python main.py
 ```
+
+### 3. Öppna Swagger UI
+
+```
+http://localhost:8000/docs
+```
+
+## 📚 API Endpoints
+
+### Original Features
+- `GET/POST/PUT/DELETE /api/v1/activities` - Aktivitetshantering
+- `GET/POST/PUT /api/v1/loneperiods` - Löneperiodhantering  
+- `GET /api/v1/loneperiods/{id}/progress` - Framdriftsspårning
+
+### LA Integration
+- `POST /api/v1/la/sync/employees` - Synka anställda från LA
+- `GET /api/v1/la/employees` - Hämta synkade anställda
+- `GET /api/v1/la/absences` - Hämta frånvaro
+- `GET /api/v1/la/vacation-balances` - Semestersaldon
+
+### v3.0 - Fellistor & Körningsstatus
+- `GET /api/v1/la/fellistor/{period_id}` - Hämta fellista
+- `GET /api/v1/la/fellistor/{period_id}/summary` - Sammanfattning
+- `PATCH /api/v1/la/fellistor/{error_id}` - Markera behandlat
+- `GET /api/v1/la/periods/{id}/korningsstatus` - Hämta körningsstatus
+- `PATCH /api/v1/la/periods/{id}/korningsstatus` - Uppdatera status
+
+## 🔧 Konfiguration
+
+### Environment Variabler
+
+```bash
+# Database
+DB_NAME=loneprocess.db
+
+# LA Integration
+LA_USE_MOCK=true
+LA_API_URL=http://localhost:8000/api/la-mock/v1
+LA_API_KEY=your-api-key
+
+# CORS
+CORS_ORIGINS=*
+```
+
+## 🧪 Testa API:et
+
+### Via Swagger UI (Rekommenderat)
+1. Öppna http://localhost:8000/docs
+2. Klicka "Try it out" på valfri endpoint
+3. Testa direkt i browsern
+
+### Via cURL
+
+```bash
+# Hämta aktiviteter
+curl http://localhost:8000/api/v1/activities
+
+# Skapa löneperiod
+curl -X POST http://localhost:8000/api/v1/loneperiods \
+  -H "Content-Type: application/json" \
+  -d '{"name":"April 2026","start_date":"2026-04-01","end_date":"2026-04-30"}'
+
+# Hämta fellista
+curl http://localhost:8000/api/v1/la/fellistor/1/summary
+```
+
+## 🗄️ Databas
+
+API:et använder SQLite med följande tabeller:
+
+### Original
+- `activities` - Löneprocessaktiviteter
+- `loneperiods` - Löneperioder
+- `assignments` - Kopplingar mellan aktiviteter och perioder
+
+### LA Integration
+- `la_employees` - Anställda från LA
+- `la_period_mappings` - Periodmappningar
+- `la_absences` - Frånvaro
+- `la_vacation_balances` - Semestersaldon
+- `la_benefits` - Förmåner
+- `la_tax_info` - Skatteinformation
+
+### v3.0
+- `la_calculation_errors` - Fellistor
+- `la_sync_log` - Synkroniseringslogg
+
+## 📖 Dokumentation
+
+- **Swagger UI:** http://localhost:8000/docs
+- **ReDoc:** http://localhost:8000/redoc
+- **OpenAPI JSON:** http://localhost:8000/openapi.json
 
 ## 🔐 Säkerhet
 
-**OBS:** Detta är en development/demo version. För production:
+### Development
+- CORS är öppet (`*`) för utveckling
+- Ingen autentisering krävs
 
-- [ ] Lägg till authentication (JWT)
-- [ ] Implementera rate limiting
+### Production (TODO)
+- [ ] Lägg till JWT autentisering
+- [ ] Begränsa CORS till specifika domains
+- [ ] Lägg till rate limiting
 - [ ] Använd PostgreSQL istället för SQLite
-- [ ] Sätt upp HTTPS
-- [ ] Validera och sanitera all input
-- [ ] Lägg till logging
-- [ ] Sätt upp monitoring
+- [ ] Aktivera HTTPS
 
-## 📝 Licens
+## 🚀 Deployment
 
-Proprietary - Endast för internt bruk.
+### Development
+```bash
+python main.py
+```
 
-## 👥 Team
+### Production (exempel med Gunicorn)
+```bash
+pip install gunicorn
+gunicorn main:app --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+```
 
-**Backend Team:**
-- Database Architect
-- API Developer  
-- Documentation Specialist
-- Testing & QA
+## 📝 Versionshistorik
 
-**Support:** support@loneprocess.se
+### v3.0.0 (2026-03-04)
+- ✨ Modulär struktur
+- ✨ Fellistor (Must-have)
+- ✨ Körningsstatus (Must-have)
+- 🔧 Förbättrad dokumentation
 
-## 🙏 Tack
+### v2.1.0 (2026-02-18)
+- ✨ LA Integration grundfunktioner
+- ✨ Mock API för utveckling
 
-Utvecklat med:
-- [FastAPI](https://fastapi.tiangolo.com/)
-- [Pydantic](https://pydantic-docs.helpmanual.io/)
-- [Uvicorn](https://www.uvicorn.org/)
-- [SQLite](https://www.sqlite.org/)
+### v1.0.0 (2026-01-30)
+- ✨ Initial release
+- ✨ Aktivitetshantering
+- ✨ Löneperiodhantering
+
+## 🤝 Bidra
+
+Detta är ett internt projekt. Kontakta teamet för frågor.
+
+## 📧 Support
+
+- **Email:** support@loneprocess.se
+- **Team:** Löneprocess Development Team
+
+## 📄 License
+
+Proprietary - Internal use only
 
 ---
 
-**Senast uppdaterad:** 2026-01-30  
-**Version:** 1.0.0
+**Made with ❤️ by Löneprocess Team**
