@@ -24,12 +24,6 @@ wheels/
 venv/
 ENV/
 env/
-.venv
-
-# Database
-*.db
-*.sqlite
-*.sqlite3
 
 # IDE
 .vscode/
@@ -37,28 +31,24 @@ env/
 *.swp
 *.swo
 *~
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+loneprocess.db
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Logs
+*.log
 
 # Testing
 .pytest_cache/
 .coverage
 htmlcov/
-*.cover
 
-# Environment
-.env
-.env.local
-.env.*.local
-
-# Logs
-logs/
-*.log
-
-# OS
-Thumbs.db
-.DS_Store
-
-# Temporary files
-tmp/
-temp/
-*.tmp
+# Remove old database folder (we use database.py instead)
+database/
