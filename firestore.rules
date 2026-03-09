@@ -1,0 +1,20 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Default: Deny all access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    
+    // Read-only access for authenticated external teams
+    match /{collection}/{document} {
+      allow read: if request.auth != null && 
+                     request.auth.token.team == 'frontend-team-x';
+      allow write: if false; // Only backend can write
+    }
+    
+    // Backend admin access (for Cloud Functions)
+    // This would be implemented through service account
+  }
+}
