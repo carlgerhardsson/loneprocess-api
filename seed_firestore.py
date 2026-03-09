@@ -8,15 +8,28 @@ import sys
 from datetime import datetime, timedelta
 from typing import List, Dict
 import random
+from pathlib import Path
 
-# Setup Firebase
-os.environ.setdefault('GOOGLE_APPLICATION_CREDENTIALS', 'credentials/serviceAccountKey.json')
+# Setup Firebase - find credentials automatically
+credentials_dir = Path(__file__).parent / "credentials"
+credential_files = list(credentials_dir.glob("*.json"))
+
+if not credential_files:
+    print("❌ ERROR: No service account key found in credentials/")
+    print("Please download serviceAccountKey.json from Firebase Console")
+    sys.exit(1)
+
+# Use the first .json file found
+CREDENTIALS_PATH = str(credential_files[0])
+print(f"✓ Using credentials: {CREDENTIALS_PATH}")
+
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = CREDENTIALS_PATH
 
 from firebase_admin import credentials, firestore, initialize_app
 
 # Initialize Firebase (only if not already initialized)
 try:
-    initialize_app(credentials.Certificate(os.environ['GOOGLE_APPLICATION_CREDENTIALS']))
+    initialize_app(credentials.Certificate(CREDENTIALS_PATH))
 except ValueError:
     pass  # Already initialized
 
