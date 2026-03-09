@@ -19,7 +19,6 @@ if credential_files:
     credentials_path = str(credential_files[0].absolute())
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
     print(f"✓ Using Firebase credentials: {credential_files[0].name}")
-    print(f"  Path: {credentials_path}")
 
 # Firebase imports
 from firebase_admin import credentials, initialize_app
@@ -30,7 +29,7 @@ try:
         initialize_app(credentials.Certificate(credentials_path))
         print("✓ Firebase initialized successfully")
     else:
-        print("⚠️  No Firebase credentials found - running without Firebase")
+        print("⚠️  No Firebase credentials found")
 except ValueError:
     print("✓ Firebase already initialized")
 except Exception as e:
@@ -57,7 +56,7 @@ Löneprocess Digital Checklista API - Firebase Staging Environment
 - Read-only för externa teams
 """
 
-CORS_ORIGINS = ["*"]  # Allow all for staging
+CORS_ORIGINS = ["*"]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = ["*"]
 CORS_ALLOW_HEADERS = ["*"]
@@ -90,7 +89,7 @@ db_adapter = FirestoreAdapter()
 # ============================================================================
 
 @app.get("/", tags=["Health"])
-async def root():
+def root():
     """Root endpoint"""
     return {
         "message": "Löneprocess Digital Checklista API v3.0 - Staging",
@@ -103,7 +102,7 @@ async def root():
 
 
 @app.get("/health", tags=["Health"])
-async def health_check():
+def health_check():
     """Health check endpoint"""
     return {
         "status": "healthy",
@@ -119,7 +118,7 @@ async def health_check():
 # ============================================================================
 
 @app.get("/api/v1/activities", response_model=List[ActivityResponse], tags=["Activities"])
-async def get_activities(
+def get_activities(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     process: Optional[str] = None,
@@ -141,7 +140,7 @@ async def get_activities(
 
 
 @app.get("/api/v1/activities/{activity_id}", response_model=ActivityResponse, tags=["Activities"])
-async def get_activity(activity_id: int):
+def get_activity(activity_id: int):
     """Hämta specifik aktivitet"""
     activity = db_adapter.get_activity(activity_id)
     if not activity:
@@ -150,7 +149,7 @@ async def get_activity(activity_id: int):
 
 
 @app.post("/api/v1/activities", response_model=ActivityResponse, status_code=201, tags=["Activities"])
-async def create_activity(activity: ActivityCreate):
+def create_activity(activity: ActivityCreate):
     """Skapa ny aktivitet"""
     try:
         created = db_adapter.create_activity(activity.model_dump())
@@ -160,7 +159,7 @@ async def create_activity(activity: ActivityCreate):
 
 
 @app.put("/api/v1/activities/{activity_id}", response_model=ActivityResponse, tags=["Activities"])
-async def update_activity(activity_id: int, activity: ActivityUpdate):
+def update_activity(activity_id: int, activity: ActivityUpdate):
     """Uppdatera aktivitet"""
     updated = db_adapter.update_activity(activity_id, activity.model_dump(exclude_unset=True))
     if not updated:
@@ -169,7 +168,7 @@ async def update_activity(activity_id: int, activity: ActivityUpdate):
 
 
 @app.delete("/api/v1/activities/{activity_id}", status_code=204, tags=["Activities"])
-async def delete_activity(activity_id: int):
+def delete_activity(activity_id: int):
     """Ta bort aktivitet"""
     deleted = db_adapter.delete_activity(activity_id)
     if not deleted:
@@ -181,7 +180,7 @@ async def delete_activity(activity_id: int):
 # ============================================================================
 
 @app.get("/api/v1/loneperiods", response_model=List[LoneperiodResponse], tags=["Loneperiods"])
-async def get_loneperiods(
+def get_loneperiods(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     status: Optional[str] = None,
@@ -201,7 +200,7 @@ async def get_loneperiods(
 
 
 @app.get("/api/v1/loneperiods/{loneperiod_id}", response_model=LoneperiodResponse, tags=["Loneperiods"])
-async def get_loneperiod(loneperiod_id: int):
+def get_loneperiod(loneperiod_id: int):
     """Hämta specifik löneperiod"""
     period = db_adapter.get_loneperiod(loneperiod_id)
     if not period:
@@ -210,7 +209,7 @@ async def get_loneperiod(loneperiod_id: int):
 
 
 @app.post("/api/v1/loneperiods", response_model=LoneperiodResponse, status_code=201, tags=["Loneperiods"])
-async def create_loneperiod(loneperiod: LoneperiodCreate):
+def create_loneperiod(loneperiod: LoneperiodCreate):
     """Skapa ny löneperiod"""
     try:
         data = loneperiod.model_dump()
@@ -227,7 +226,7 @@ async def create_loneperiod(loneperiod: LoneperiodCreate):
 
 
 @app.put("/api/v1/loneperiods/{loneperiod_id}", response_model=LoneperiodResponse, tags=["Loneperiods"])
-async def update_loneperiod(loneperiod_id: int, loneperiod: LoneperiodUpdate):
+def update_loneperiod(loneperiod_id: int, loneperiod: LoneperiodUpdate):
     """Uppdatera löneperiod"""
     data = loneperiod.model_dump(exclude_unset=True)
     
@@ -244,7 +243,7 @@ async def update_loneperiod(loneperiod_id: int, loneperiod: LoneperiodUpdate):
 
 
 @app.get("/api/v1/loneperiods/{loneperiod_id}/progress", response_model=LoneperiodProgressResponse, tags=["Loneperiods"])
-async def get_loneperiod_progress(loneperiod_id: int):
+def get_loneperiod_progress(loneperiod_id: int):
     """Hämta framdrift för löneperiod"""
     try:
         progress = db_adapter.get_loneperiod_progress(loneperiod_id)
@@ -254,7 +253,7 @@ async def get_loneperiod_progress(loneperiod_id: int):
 
 
 @app.post("/api/v1/loneperiods/{loneperiod_id}/activities", status_code=201, tags=["Loneperiods"])
-async def add_activities_to_loneperiod(loneperiod_id: int, request: AddActivitiesRequest):
+def add_activities_to_loneperiod(loneperiod_id: int, request: AddActivitiesRequest):
     """Lägg till aktiviteter till löneperiod"""
     try:
         added = db_adapter.add_activities_to_loneperiod(loneperiod_id, request.activity_ids)
@@ -268,7 +267,7 @@ async def add_activities_to_loneperiod(loneperiod_id: int, request: AddActivitie
 # ============================================================================
 
 @app.get("/api/v1/la/employees", response_model=List[LAEmployeeResponse], tags=["LA Integration - Data"])
-async def get_la_employees(
+def get_la_employees(
     org_kod: Optional[str] = None,
     status: Optional[str] = None,
     limit: int = Query(100, le=1000)
@@ -290,7 +289,7 @@ async def get_la_employees(
 # ============================================================================
 
 @app.get("/api/v1/la/fellistor/{loneperiod_id}", response_model=List[LACalculationErrorResponse], tags=["LA Integration - Fellistor"])
-async def get_fellistor(
+def get_fellistor(
     loneperiod_id: int,
     severity: Optional[str] = Query(None, pattern="^(error|warning|info)$"),
     visa_endast_obehandlade: bool = False,
@@ -310,7 +309,7 @@ async def get_fellistor(
 
 
 @app.get("/api/v1/la/fellistor/{loneperiod_id}/summary", response_model=FellistaSummary, tags=["LA Integration - Fellistor"])
-async def get_fellista_summary(loneperiod_id: int):
+def get_fellista_summary(loneperiod_id: int):
     """Hämta sammanfattning av fellista"""
     try:
         summary = db_adapter.get_fellista_summary(loneperiod_id)
@@ -320,7 +319,7 @@ async def get_fellista_summary(loneperiod_id: int):
 
 
 @app.patch("/api/v1/la/fellistor/{error_id}", response_model=LACalculationErrorResponse, tags=["LA Integration - Fellistor"])
-async def update_fellista_error(error_id: str, update: LACalculationErrorUpdate):
+def update_fellista_error(error_id: str, update: LACalculationErrorUpdate):
     """Uppdatera fel i fellistan"""
     updated = db_adapter.update_fellista_error(error_id, update.model_dump(exclude_unset=True))
     if not updated:
@@ -333,7 +332,7 @@ async def update_fellista_error(error_id: str, update: LACalculationErrorUpdate)
 # ============================================================================
 
 @app.get("/api/v1/la/periods/{loneperiod_id}/korningsstatus", response_model=KorningsStatusResponse, tags=["LA Integration - Körningsstatus"])
-async def get_korningsstatus(loneperiod_id: int):
+def get_korningsstatus(loneperiod_id: int):
     """Hämta körningsstatus för löneperiod"""
     status = db_adapter.get_korningsstatus(loneperiod_id)
     if not status:
@@ -342,7 +341,7 @@ async def get_korningsstatus(loneperiod_id: int):
 
 
 @app.patch("/api/v1/la/periods/{loneperiod_id}/korningsstatus", response_model=KorningsStatusResponse, tags=["LA Integration - Körningsstatus"])
-async def update_korningsstatus(loneperiod_id: int, update: KorningsStatusUpdate):
+def update_korningsstatus(loneperiod_id: int, update: KorningsStatusUpdate):
     """Uppdatera körningsstatus"""
     updated = db_adapter.update_korningsstatus(loneperiod_id, update.model_dump(exclude_unset=True))
     if not updated:
