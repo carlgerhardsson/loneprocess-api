@@ -10,13 +10,16 @@ from typing import Optional, List
 from pathlib import Path
 import os
 
-# Setup Firebase credentials
+# Setup Firebase credentials - auto-detect
 credentials_dir = Path(__file__).parent / "credentials"
 credential_files = list(credentials_dir.glob("*.json"))
 
 if credential_files:
-    os.environ.setdefault('GOOGLE_APPLICATION_CREDENTIALS', str(credential_files[0]))
+    # Use absolute path
+    credentials_path = str(credential_files[0].absolute())
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
     print(f"✓ Using Firebase credentials: {credential_files[0].name}")
+    print(f"  Path: {credentials_path}")
 
 # Firebase imports
 from firebase_admin import credentials, initialize_app
@@ -24,11 +27,15 @@ from firebase_admin import credentials, initialize_app
 # Initialize Firebase (only if not already initialized)
 try:
     if credential_files:
-        initialize_app(credentials.Certificate(os.environ['GOOGLE_APPLICATION_CREDENTIALS']))
+        initialize_app(credentials.Certificate(credentials_path))
+        print("✓ Firebase initialized successfully")
     else:
         print("⚠️  No Firebase credentials found - running without Firebase")
 except ValueError:
-    pass  # Already initialized
+    print("✓ Firebase already initialized")
+except Exception as e:
+    print(f"❌ Firebase initialization error: {e}")
+    raise
 
 # Import Firebase adapter
 from firebase_adapter import FirestoreAdapter
