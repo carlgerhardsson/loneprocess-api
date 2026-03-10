@@ -12,13 +12,9 @@ service cloud.firestore {
              request.auth.token.team == 'frontend-team-x';
     }
     
-    function isValidTimestamp(timestamp) {
-      return timestamp is timestamp;
-    }
-    
-    // Rate limiting helper (basic)
-    function notTooManyRequests() {
-      // Firebase has built-in rate limiting, but we add an extra check
+    // Rate limiting helper (basic validation)
+    function isValidRequest() {
+      // Basic request validation - just check request is recent
       return request.time > timestamp.date(2024, 1, 1);
     }
     
@@ -29,32 +25,32 @@ service cloud.firestore {
     
     // Read-only access for external teams with validation
     match /loneperiods/{period} {
-      allow read: if isFrontendTeam() && notTooManyRequests();
+      allow read: if isFrontendTeam() && isValidRequest();
       allow write: if false;
     }
     
     match /activities/{activity} {
-      allow read: if isFrontendTeam() && notTooManyRequests();
+      allow read: if isFrontendTeam() && isValidRequest();
       allow write: if false;
     }
     
     match /employees/{employee} {
-      allow read: if isFrontendTeam() && notTooManyRequests();
+      allow read: if isFrontendTeam() && isValidRequest();
       allow write: if false;
     }
     
     match /assignments/{assignment} {
-      allow read: if isFrontendTeam() && notTooManyRequests();
+      allow read: if isFrontendTeam() && isValidRequest();
       allow write: if false;
     }
     
     match /fellistor/{error} {
-      allow read: if isFrontendTeam() && notTooManyRequests();
+      allow read: if isFrontendTeam() && isValidRequest();
       allow write: if false;
     }
     
     match /la_period_mappings/{mapping} {
-      allow read: if isFrontendTeam() && notTooManyRequests();
+      allow read: if isFrontendTeam() && isValidRequest();
       allow write: if false;
     }
     
