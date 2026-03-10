@@ -135,7 +135,13 @@ class FirestoreAdapter:
         query = query.limit(limit)
         
         docs = query.stream()
-        return [{'anstnr': doc.id, **doc.to_dict()} for doc in docs]
+        # Return with 'id' field for Pydantic validation
+        results = []
+        for doc in docs:
+            data = doc.to_dict()
+            data['id'] = doc.id  # Use document ID as id
+            results.append(data)
+        return results
     
     # ========================================================================
     # FELLISTOR
