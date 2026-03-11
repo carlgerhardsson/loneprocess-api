@@ -1,0 +1,14 @@
+# Firebase Functions requirements
+functions-framework==3.*
+
+# FastAPI and dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+python-multipart==0.0.6
+
+# Firebase
+firebase-admin==6.3.0
+
+# Additional dependencies
+python-dateutil==2.8.2
