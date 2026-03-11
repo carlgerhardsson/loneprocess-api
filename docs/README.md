@@ -1,14 +1,15 @@
 # Documentation Overview
 
-**All project documentation for L\u00f6neprocess Digital Checklista API**
+**All project documentation for Löneprocess Digital Checklista API**
 
 ---
 
-## \ud83d\udcda Documentation Structure
+## 📚 Documentation Structure
 
 ### **For Internal Team:**
 - [PROJECT_HISTORY.md](PROJECT_HISTORY.md) - **START HERE!** Complete project timeline
 - [LESSONS_LEARNED.md](LESSONS_LEARNED.md) - Best practices and pitfalls
+- [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) - **NEW!** How to develop new endpoints
 - [CLAUDE_VSCODE_GITHUB_WORKFLOW.md](CLAUDE_VSCODE_GITHUB_WORKFLOW.md) - Development workflow
 
 ### **For External Teams:**
@@ -22,29 +23,54 @@
 
 ---
 
-## \ud83d\ude80 Quick Links
+## 🚀 Quick Links
 
 **For Developers:**
 - Local API: http://localhost:8000/docs
 - GitHub Repo: https://github.com/carlgerhardsson/loneprocess-api
 - Firebase Console: https://console.firebase.google.com/project/loneprocess-api-staging
+- Public Docs: https://github.com/carlgerhardsson/loneprocess-api-docs
 
 **For External Teams:**
-- Start here: [EXTERNAL_TEAMS_README.md](EXTERNAL_TEAMS_README.md)
+- Public Docs: https://github.com/carlgerhardsson/loneprocess-api-docs
 - Request access: carl.gerhardsson@cgi.com
 
 ---
 
-## \ud83d\udccc Repository Structure
+## 📖 What to Read When
 
-```
-loneprocess-api/
-\u251c\u2500\u2500 main branch (SQLite backend)
-\u2514\u2500\u2500 staging branch (Firebase backend)
-```
+### **New to the project?**
+1. Read [PROJECT_HISTORY.md](PROJECT_HISTORY.md) - Get full context
+2. Read [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) - Understand how we work
 
-**Documentation is identical on both branches.**
+### **Adding a new feature?**
+1. Read [DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md) - Follow the process
+2. Check [LESSONS_LEARNED.md](LESSONS_LEARNED.md) - Avoid common mistakes
+
+### **Troubleshooting?**
+1. Check [LESSONS_LEARNED.md](LESSONS_LEARNED.md) - Common issues & solutions
+2. Check Firebase Console logs
+
+### **Integrating as external team?**
+1. Go to https://github.com/carlgerhardsson/loneprocess-api-docs
+2. Start with README → Integration Guide → Examples
 
 ---
 
-**Last Updated:** 2026-03-10
+## 📊 Repository Structure
+
+```
+loneprocess-api/ (PRIVATE)
+├── main branch (SQLite backend + docs)
+└── staging branch (Firebase backend + docs)
+
+loneprocess-api-docs/ (PUBLIC)
+└── main branch (External documentation only)
+```
+
+**All internal documentation is in this /docs folder.**
+
+---
+
+**Last Updated:** 2026-03-11  
+**Maintainer:** Carl Gerhardsson
