@@ -28,6 +28,12 @@ Every push to `staging` branch triggers automatic deployment to Cloud Run.
 
 Check deployment status: https://github.com/carlgerhardsson/loneprocess-api/actions
 
+## ✅ APIs Enabled
+
+- Cloud Run API
+- Cloud Build API
+- Artifact Registry API
+
 ---
 
-**Status:** ✅ Ready for deployment
+**Status:** ✅ Ready for deployment (APIs enabled)
