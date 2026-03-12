@@ -7,6 +7,7 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 from firebase_admin import firestore
 import logging
+from config import get_db
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,15 @@ class FirestoreAdapter:
     """Adapter for Firestore database operations"""
     
     def __init__(self):
-        self.db = firestore.client()
+        # Lazy initialization - get_db() will initialize Firebase if needed
+        self._db = None
+    
+    @property
+    def db(self):
+        """Lazy-loaded Firestore client"""
+        if self._db is None:
+            self._db = get_db()
+        return self._db
     
     # ========================================================================
     # LONEPERIODS
