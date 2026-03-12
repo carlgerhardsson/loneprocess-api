@@ -1,0 +1,6 @@
+Deployment triggered at: 2026-03-12 16:15:00
+Reason: Testing DELETE/DEPLOY workflow
+Triggered by: Claude assistant
+
+This file exists solely to trigger GitHub Actions deployment.
+It can be safely deleted or ignored.
