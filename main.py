@@ -7,36 +7,9 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 from typing import Optional, List
-from pathlib import Path
-import os
 
-# Setup Firebase credentials - auto-detect
-credentials_dir = Path(__file__).parent / "credentials"
-credential_files = list(credentials_dir.glob("*.json"))
-
-if credential_files:
-    # Use absolute path
-    credentials_path = str(credential_files[0].absolute())
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
-    print(f"✓ Using Firebase credentials: {credential_files[0].name}")
-
-# Firebase imports
-from firebase_admin import credentials, initialize_app
-
-# Initialize Firebase (only if not already initialized)
-try:
-    if credential_files:
-        initialize_app(credentials.Certificate(credentials_path))
-        print("✓ Firebase initialized successfully")
-    else:
-        print("⚠️  No Firebase credentials found")
-except ValueError:
-    print("✓ Firebase already initialized")
-except Exception as e:
-    print(f"❌ Firebase initialization error: {e}")
-    raise
-
-# Import Firebase adapter
+# Import Firebase adapter and models
+# NOTE: config.py handles Firebase initialization - do not initialize again!
 from firebase_adapter import FirestoreAdapter
 from models import *
 from rate_limiter import RateLimiter
