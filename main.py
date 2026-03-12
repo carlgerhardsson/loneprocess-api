@@ -39,6 +39,7 @@ except Exception as e:
 # Import Firebase adapter
 from firebase_adapter import FirestoreAdapter
 from models import *
+from rate_limiter import RateLimiter
 
 # ============================================================================
 # CONFIG
@@ -54,6 +55,7 @@ Löneprocess Digital Checklista API - Firebase Staging Environment
 - Firestore Database (test data)
 - Firebase Authentication
 - Read-only för externa teams
+- **Rate Limited: 60 requests/minute**
 """
 
 CORS_ORIGINS = ["*"]
@@ -80,6 +82,9 @@ app.add_middleware(
     allow_headers=CORS_ALLOW_HEADERS,
 )
 
+# Rate Limiting Middleware - 60 requests per minute
+app.add_middleware(RateLimiter, requests_per_minute=60)
+
 # Initialize Firestore adapter
 db_adapter = FirestoreAdapter()
 
@@ -96,6 +101,7 @@ def root():
         "version": API_VERSION,
         "environment": "staging",
         "database": "Firestore",
+        "rate_limit": "60 requests/minute",
         "docs": "/docs",
         "health": "/health"
     }
@@ -109,6 +115,7 @@ def health_check():
         "version": API_VERSION,
         "environment": "staging",
         "database": "Firestore",
+        "rate_limit": "60 requests/minute",
         "service": "Löneprocess API v3.0"
     }
 
@@ -362,6 +369,7 @@ if __name__ == "__main__":
     print(f"Environment: Staging")
     print(f"Database: Firestore")
     print(f"Version: {API_VERSION}")
+    print(f"Rate Limit: 60 requests/minute")
     
     print("\n📚 Swagger UI: http://localhost:8000/docs")
     print("📖 ReDoc: http://localhost:8000/redoc")
