@@ -55,12 +55,45 @@ const periods = await response.json();
 
 ---
 
+## ⚠️ IMPORTANT: Rate Limiting
+
+**API är begränsat till 60 requests per minut per IP-adress**
+
+### Quick Facts:
+- ✅ Max 60 requests/minute
+- ✅ Average: 1 request/second
+- ❌ HTTP 429 if exceeded
+- 🔄 Retry after 60 seconds
+
+### Response Headers:
+```
+X-RateLimit-Limit: 60
+X-RateLimit-Remaining: 45
+X-RateLimit-Reset: 1678901234
+```
+
+### Best Practice:
+```javascript
+// Always check rate limit headers
+const response = await fetch(url, options);
+const remaining = response.headers.get('X-RateLimit-Remaining');
+
+if (remaining < 10) {
+  console.warn('⚠️ Approaching rate limit!');
+}
+```
+
+**📖 Full details:** [RATE_LIMITING.md](RATE_LIMITING.md)
+
+---
+
 ## 📚 Documentation
 
 ### **Quick References:**
 - [Integration Guide](INTEGRATION_GUIDE.md) - Step-by-step integration
 - [Firebase Setup](FIREBASE_SETUP.md) - Authentication setup
 - [Test Data](TEST_DATA.md) - Available test data
+- [Rate Limiting](RATE_LIMITING.md) - **IMPORTANT** Cost control
 - [Code Examples](examples/) - JS, TS, cURL examples
 
 ---
@@ -83,7 +116,24 @@ GET  /api/v1/la/fellistor/{id}     # Get error list
 
 ---
 
-## 📋 Available Test Data
+## 🔒 Security
+
+- ✅ **Read-only access** - You cannot modify data
+- ✅ **Test data only** - No production or sensitive data
+- ✅ **Token-based auth** - Firebase Authentication required
+- ✅ **Rate limited** - 60 requests/minute (cost control)
+- ✅ **HTTPS enforced** - All traffic encrypted
+
+### Important:
+- Never commit tokens to Git
+- Store tokens in environment variables
+- Don't share tokens between teams
+- Report security issues immediately
+- **Respect rate limits** - They protect against unexpected costs
+
+---
+
+## 📊 Available Test Data
 
 - **100 employees** - Swedish names, realistic org codes
 - **12 salary periods** - Jan-Dec 2025
@@ -95,22 +145,6 @@ See [TEST_DATA.md](TEST_DATA.md) for details.
 
 ---
 
-## 🔒 Security
-
-- ✅ **Read-only access** - You cannot modify data
-- ✅ **Test data only** - No production or sensitive data
-- ✅ **Token-based auth** - Firebase Authentication required
-- ✅ **Rate limited** - 100 requests/minute
-- ✅ **HTTPS enforced** - All traffic encrypted
-
-### Important:
-- Never commit tokens to Git
-- Store tokens in environment variables
-- Don't share tokens between teams
-- Report security issues immediately
-
----
-
 ## 💬 Support
 
 **Need help?**
@@ -118,6 +152,9 @@ See [TEST_DATA.md](TEST_DATA.md) for details.
 - **Email:** carl.gerhardsson@cgi.com
 - **Response time:** Within 24 hours
 - **GitHub Issues:** [Report here](https://github.com/carlgerhardsson/loneprocess-api/issues)
+
+**Rate limit too low?**
+Contact us to discuss your use case. We can adjust limits if needed.
 
 ---
 
@@ -127,7 +164,9 @@ See [TEST_DATA.md](TEST_DATA.md) for details.
 
 **Status:** ✅ Active
 
-**Last Updated:** 2026-03-10
+**Rate Limit:** 60 req/min
+
+**Last Updated:** 2026-03-11
 
 ---
 
