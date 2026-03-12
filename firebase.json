@@ -16,7 +16,13 @@
         "__pycache__",
         "venv",
         ".venv",
-        "credentials"
+        "credentials",
+        "database",
+        "docs",
+        "functions",
+        "*.tar",
+        "*.tar.gz",
+        "*.md"
       ],
       "runtime": "python311"
     }
