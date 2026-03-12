@@ -16,6 +16,8 @@ COPY firebase_adapter.py .
 COPY models.py .
 COPY rate_limiter.py .
 COPY config.py .
+COPY api_keys.py .
+COPY auth_middleware.py .
 
 # Copy credentials (will be handled via env var in production)
 # Not needed - Cloud Run uses Application Default Credentials
