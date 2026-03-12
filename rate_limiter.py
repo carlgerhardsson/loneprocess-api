@@ -1,8 +1,9 @@
 """Rate limiting middleware for FastAPI"""
 import time
 from collections import defaultdict
-from typing import Dict, Tuple
-from fastapi import Request, HTTPException
+from typing import Dict
+from fastapi import Request
+from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
 class RateLimiter(BaseHTTPMiddleware):
@@ -16,7 +17,7 @@ class RateLimiter(BaseHTTPMiddleware):
     def __init__(self, app, requests_per_minute: int = 60):
         super().__init__(app)
         self.requests_per_minute = requests_per_minute
-        # Store: {ip: [(timestamp, count)]}
+        # Store: {ip: [timestamp1, timestamp2, ...]}
         self.requests: Dict[str, list] = defaultdict(list)
         
     async def dispatch(self, request: Request, call_next):
@@ -32,14 +33,21 @@ class RateLimiter(BaseHTTPMiddleware):
         
         # Check rate limit
         if len(self.requests[client_ip]) >= self.requests_per_minute:
-            raise HTTPException(
+            # Return 429 response directly (don't raise exception in middleware)
+            return JSONResponse(
                 status_code=429,
-                detail={
+                content={
                     "error": "Rate limit exceeded",
                     "message": f"Maximum {self.requests_per_minute} requests per minute allowed",
                     "retry_after": 60,
                     "limit": self.requests_per_minute,
                     "window": "1 minute"
+                },
+                headers={
+                    "X-RateLimit-Limit": str(self.requests_per_minute),
+                    "X-RateLimit-Remaining": "0",
+                    "X-RateLimit-Reset": str(int(current_time + 60)),
+                    "Retry-After": "60"
                 }
             )
         
@@ -49,10 +57,10 @@ class RateLimiter(BaseHTTPMiddleware):
         # Process request
         response = await call_next(request)
         
-        # Add rate limit headers
+        # Add rate limit headers to successful responses
         remaining = self.requests_per_minute - len(self.requests[client_ip])
         response.headers['X-RateLimit-Limit'] = str(self.requests_per_minute)
-        response.headers['X-RateLimit-Remaining'] = str(remaining)
+        response.headers['X-RateLimit-Remaining'] = str(max(0, remaining))
         response.headers['X-RateLimit-Reset'] = str(int(current_time + 60))
         
         return response
