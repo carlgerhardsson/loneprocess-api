@@ -1,0 +1,48 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info
+dist
+build
+
+# Virtual environments
+venv
+.venv
+env
+ENV
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+credentials/
+database/
+docs/
+functions/
+*.md
+*.tar
+*.tar.gz
+firebase-debug.log
+firebase-debug.*.log
+
+# SQLite
+*.db
+*.sqlite
+*.sqlite3
