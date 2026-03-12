@@ -1,15 +1,13 @@
-# Core FastAPI dependencies
+# Core dependencies
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 pydantic==2.5.0
 python-multipart==0.0.6
+python-dateutil==2.8.2
 
 # Firebase dependencies
 firebase-admin==6.3.0
+firebase-functions==0.4.1
 
-# Cloud Functions dependencies
-functions-framework==3.*
-asgiref==3.7.2
-
-# Additional dependencies
-python-dateutil==2.8.2
+# ASGI adapter for Cloud Functions
+mangum==0.17.0
