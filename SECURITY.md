@@ -1,149 +1,224 @@
-# Security Policy
+# 🔐 Säkerhetsguide - Skydda API:et
 
-## Supported Versions
+## ⚠️ NUVARANDE STATUS
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 3.0.x   | :white_check_mark: |
-| < 3.0   | :x:                |
+**API:et är PUBLIKT TILLGÄNGLIGT:**
+- URL: https://loneprocess-api-922770673146.us-central1.run.app
+- Ingen autentisering krävs
+- Vem som helst kan anropa endpoints
 
-## Reporting a Vulnerability
+**SKYDD SOM FINNS:**
+- ✅ Rate limiting: 60 requests/min per IP
+- ✅ Budget alert: $5/månad
+- ✅ Obskyr URL (svår att gissa)
 
-If you discover a security vulnerability, please email:
-**carl.gerhardsson@cgi.com**
-
-**Do NOT open a public GitHub issue for security vulnerabilities.**
-
----
-
-## Security Measures
-
-### 1. Firebase Authentication
-- ✅ Custom tokens with team claims
-- ✅ Token expiration: 1 hour
-- ✅ Token refresh required
-- ✅ No password-based auth (token-only)
-
-### 2. Firestore Security Rules
-- ✅ Read-only access for external teams
-- ✅ Explicit collection whitelisting
-- ✅ Team-based access control via custom claims
-- ✅ No write access from external clients
-- ✅ Service account required for writes
-
-### 3. API Security
-- ✅ CORS restricted (configurable)
-- ✅ Rate limiting via Firebase
-- ✅ Input validation via Pydantic
-- ✅ No SQL injection (Firestore is NoSQL)
-
-### 4. Data Protection
-- ✅ Test data only (no production data)
-- ✅ No PII in staging environment
-- ✅ Swedish test names (realistic but fake)
-- ✅ No real personnummer
-
-### 5. Secret Management
-- ✅ Service account keys in .gitignore
-- ✅ Firebase tokens in GitHub Secrets
-- ✅ No secrets in code
-- ✅ Credentials folder excluded from Git
-
-### 6. Access Control
-
-**What External Teams CAN access:**
-- ✅ API documentation (public GitHub branch)
-- ✅ Staging API endpoints (with valid token)
-- ✅ Test data (read-only)
-
-**What External Teams CANNOT access:**
-- ❌ Source code (private branches)
-- ❌ Firebase Console
-- ❌ Service account keys
-- ❌ GitHub Secrets
-- ❌ Write access to database
-- ❌ Production environment
-
-### 7. Monitoring
-- ✅ Firebase usage monitoring
-- ✅ GitHub Actions logs
-- ✅ Budget alerts at $0
-- ✅ No auto-upgrade to paid plans
+**SKYDD SOM SAKNAS:**
+- ❌ Ingen IP whitelist
+- ❌ Ingen Firebase Auth enforcement
+- ❌ Ingen API key requirement
 
 ---
 
-## Security Checklist
+## 🎯 RISKER
 
-Before giving external access:
+### Hög Risk: Data Läckning
+- Vem som helst kan läsa Firestore data
+- Lönedata, fellistor, anställda synliga
+- **Mitigation:** Obskyr URL + testdata
 
-- [ ] Service account key NOT in Git
-- [ ] Firestore rules deployed and tested
-- [ ] Firebase token stored in GitHub Secrets
-- [ ] Budget alert set to $0
-- [ ] Test data verified (no real PII)
-- [ ] CORS configured correctly
-- [ ] Token expiration tested
-- [ ] Read-only access verified
-- [ ] Documentation reviewed
-- [ ] External team onboarding documented
+### Medelhög Risk: Data Manipulation  
+- Vem som helst kan ändra/ta bort data
+- **Mitigation:** Testdata (kan re-seeda)
+
+### Låg Risk: DoS Attack
+- Spamming blockeras av rate limit
+- **Mitigation:** 60 req/min max = $0-5/månad
 
 ---
 
-## Incident Response
+## 🛡️ SÄKERHETSNIVÅER
 
-If a security incident occurs:
+### NIVÅ 1: IP Whitelist (Snabbaste)
 
-1. **Immediately revoke all external tokens**
-   ```bash
-   firebase auth:export users.json
-   # Review and delete compromised tokens
+**För:** Staging/test med kända användare
+
+**Steg via Cloud Console:**
+
+1. Gå till Cloud Run service:
+   ```
+   https://console.cloud.google.com/run/detail/us-central1/loneprocess-api?project=loneprocess-api-staging
    ```
 
-2. **Update Firestore rules**
-   ```bash
-   firebase deploy --only firestore:rules
-   ```
+2. Klicka "EDIT & DEPLOY NEW REVISION"
 
-3. **Rotate GitHub Secrets**
-   - Generate new FIREBASE_TOKEN
-   - Update in GitHub Secrets
+3. Gå till "Security" tab
 
-4. **Audit logs**
-   - Check Firebase Console → Usage
-   - Review GitHub Actions logs
+4. Under "Ingress control":
+   - Välj "Internal and Cloud Load Balancing"
+   ELLER
+   - Använd Cloud Armor för IP filtering
 
-5. **Notify affected parties**
-   - Email external teams
-   - Provide new tokens if needed
+**Resultat:**
+- ✅ Endast dina IP:er kan anropa
+- ✅ Enkel att implementera
+- ❌ Kräver uppdatering vid nya IPs
 
 ---
 
-## Security Best Practices
+### NIVÅ 2: API Keys (Rekommenderat)
 
-### For Developers:
-1. Never commit credentials
-2. Use environment variables
-3. Review Firestore rules regularly
-4. Keep dependencies updated
-5. Test security rules before deploy
+**För:** Kontrollerad åtkomst till externa teams
 
-### For External Teams:
-1. Keep tokens secure
-2. Don't share tokens between teams
-3. Report suspicious activity
-4. Use HTTPS only
-5. Rotate tokens periodically
+**Implementation i kod:**
+
+```python
+# I main.py
+from fastapi import Header, HTTPException
+
+VALID_API_KEYS = {
+    "team-x-key-abc123": "Frontend Team X",
+    "team-y-key-xyz789": "Mobile Team Y"
+}
+
+async def verify_api_key(x_api_key: str = Header(...)):
+    if x_api_key not in VALID_API_KEYS:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    return VALID_API_KEYS[x_api_key]
+
+# Lägg till i endpoints:
+@app.get("/api/v1/activities", dependencies=[Depends(verify_api_key)])
+def get_activities():
+    ...
+```
+
+**Resultat:**
+- ✅ Kontrollerad åtkomst per team
+- ✅ Kan revokera keys
+- ✅ Spårbar användning
 
 ---
 
-## Compliance
+### NIVÅ 3: Firebase Auth (Production)
 
-- ✅ GDPR: Test data only, no real PII
-- ✅ Data residency: europe-west region
-- ✅ Encryption: TLS 1.3 in transit, AES-256 at rest
-- ✅ Audit trail: Firebase logs
+**För:** Full produktion med user management
+
+**Implementation:**
+
+```python
+# I main.py
+from firebase_admin import auth
+from fastapi import Depends, HTTPException
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+security = HTTPBearer()
+
+async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    try:
+        decoded_token = auth.verify_id_token(credentials.credentials)
+        return decoded_token
+    except:
+        raise HTTPException(status_code=401, detail="Invalid authentication")
+
+# Lägg till i endpoints:
+@app.get("/api/v1/activities", dependencies=[Depends(verify_token)])
+def get_activities():
+    ...
+```
+
+**Resultat:**
+- ✅ Full user management
+- ✅ Role-based access control
+- ✅ Production-ready
 
 ---
 
-**Last Updated:** 2026-03-10
-**Next Review:** 2026-06-10
+### NIVÅ 4: Firestore Security Rules
+
+**För:** Database-level säkerhet
+
+**I Firebase Console:**
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Kräv autentisering för all access
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Eller mer granulär:
+    match /activities/{activityId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth.token.admin == true;
+    }
+  }
+}
+```
+
+**Resultat:**
+- ✅ Skydd även om API bypassas
+- ✅ Granulär kontroll per collection
+- ✅ Defense in depth
+
+---
+
+## 📊 REKOMMENDATION FÖR STAGING
+
+**Nivå 1 + Nivå 2 kombination:**
+
+1. ✅ **Behåll rate limiting** (60 req/min)
+2. ✅ **Lägg till API keys** för frontend teams
+3. ✅ **Dela INTE URL:en publikt**
+4. ⚠️ **Använd testdata** (ingen produktionsdata)
+
+**Kostnad:** $2-3/månad + $0 för extra säkerhet
+
+---
+
+## 🚨 OM NÅGON HITTAR URL:EN
+
+**Vad kan hända:**
+- De ser testdata (ingen känslig data)
+- De begränsas till 60 req/min
+- Budget alert vid $5
+- Du kan se alla requests i Cloud Logs
+
+**Vad du gör:**
+1. Kolla logs: https://console.cloud.google.com/run/detail/us-central1/loneprocess-api/logs?project=loneprocess-api-staging
+2. Om missbruk: Deploy ny revision med API keys
+3. Om mycket missbruk: Pausa/delete service
+
+---
+
+## 📞 AKUT RESPONS
+
+**Om du ser misstänkt aktivitet:**
+
+**1. Kolla logs omedelbart:**
+```
+https://console.cloud.google.com/run/detail/us-central1/loneprocess-api/logs?project=loneprocess-api-staging
+```
+
+**2. Pausa service (DELETE):**
+```
+https://console.cloud.google.com/run?project=loneprocess-api-staging
+```
+
+**3. Re-seed Firestore vid korrupt data:**
+```bash
+python seed_firestore.py
+```
+
+---
+
+## ✅ NÄSTA STEG
+
+**Vad vill du göra?**
+
+1. ⭐ **Inget just nu** - Obskyr URL räcker för staging
+2. 🔐 **Lägg till API keys** - För frontend teams
+3. 🛡️ **Firebase Auth** - Full production security
+4. 🌐 **IP Whitelist** - Endast dina IPs
+
+Vad passar bäst för ditt användningsfall?
