@@ -1,0 +1,70 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isFrontendTeam() {
+      return isAuthenticated() && 
+             request.auth.token.team == 'frontend-team-x';
+    }
+    
+    // Rate limiting helper (basic validation)
+    function isValidRequest() {
+      // Basic request validation - just check request is recent
+      return request.time > timestamp.date(2024, 1, 1);
+    }
+    
+    // Default: Deny everything
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    
+    // Read-only access for external teams with validation
+    match /loneperiods/{period} {
+      allow read: if isFrontendTeam() && isValidRequest();
+      allow write: if false;
+    }
+    
+    match /activities/{activity} {
+      allow read: if isFrontendTeam() && isValidRequest();
+      allow write: if false;
+    }
+    
+    match /employees/{employee} {
+      allow read: if isFrontendTeam() && isValidRequest();
+      allow write: if false;
+    }
+    
+    match /assignments/{assignment} {
+      allow read: if isFrontendTeam() && isValidRequest();
+      allow write: if false;
+    }
+    
+    match /fellistor/{error} {
+      allow read: if isFrontendTeam() && isValidRequest();
+      allow write: if false;
+    }
+    
+    match /la_period_mappings/{mapping} {
+      allow read: if isFrontendTeam() && isValidRequest();
+      allow write: if false;
+    }
+    
+    // Explicitly block sensitive collections
+    match /admin/{document=**} {
+      allow read, write: if false;
+    }
+    
+    match /internal/{document=**} {
+      allow read, write: if false;
+    }
+    
+    match /credentials/{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,10 @@
+# Firebase specific requirements
+firebase-admin==6.5.0
+functions-framework==3.*
+
+# Keep all existing requirements
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+pydantic==2.10.3
+httpx==0.28.0
+python-multipart==0.0.19

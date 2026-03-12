@@ -1,71 +1,83 @@
 """
-Configuration settings for Löneprocess API v3.0
+Firebase configuration for staging environment
+Lazy initialization - Firebase is initialized on first use, not at import time
 """
 import os
-from typing import Literal
+import logging
+from firebase_admin import credentials, firestore, initialize_app
 
-# ============================================================================
-# DATABASE CONFIGURATION
-# ============================================================================
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-DB_NAME = os.getenv("DB_NAME", "loneprocess.db")
+# Global variables
+_db = None
+_initialized = False
 
-# ============================================================================
-# LA INTEGRATION CONFIGURATION
-# ============================================================================
+def get_firebase_credentials_path():
+    """Get Firebase credentials path - supports both local and Cloud Run."""
+    # Cloud Run: Uses Application Default Credentials automatically
+    # Local: Uses credentials file
+    
+    creds_json = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    if creds_json:
+        logger.info(f"Using GOOGLE_APPLICATION_CREDENTIALS: {creds_json}")
+        return creds_json
+    
+    # Local development path
+    local_path = os.path.join('credentials', 'loneprocess-api-staging-firebase-adminsdk-fbsvc-f174b6cb01.json')
+    if os.path.exists(local_path):
+        logger.info(f"Using local credentials: {local_path}")
+        return local_path
+    
+    # Cloud Run - no explicit credentials needed
+    logger.info("Using Application Default Credentials (Cloud Run)")
+    return None
 
-LA_USE_MOCK = os.getenv("LA_USE_MOCK", "true").lower() == "true"
-LA_API_URL = os.getenv("LA_API_URL", "http://localhost:8000/api/la-mock/v1")
-LA_API_KEY = os.getenv("LA_API_KEY", "mock-api-key")
+def initialize_firebase():
+    """Initialize Firebase (called on first use)"""
+    global _initialized
+    
+    if _initialized:
+        logger.info("Firebase already initialized")
+        return
+    
+    try:
+        creds_path = get_firebase_credentials_path()
+        
+        if creds_path:
+            cred = credentials.Certificate(creds_path)
+            initialize_app(cred)
+            logger.info("✅ Firebase initialized with credentials file")
+        else:
+            # Cloud Run uses ADC
+            initialize_app()
+            logger.info("✅ Firebase initialized with Application Default Credentials")
+        
+        _initialized = True
+        logger.info("✅ Firebase initialization complete")
+        
+    except Exception as e:
+        logger.error(f"❌ Firebase initialization failed: {e}")
+        raise
 
-# ============================================================================
-# API CONFIGURATION
-# ============================================================================
+def get_db():
+    """Get Firestore client (lazy initialization)"""
+    global _db
+    
+    if _db is None:
+        if not _initialized:
+            initialize_firebase()
+        _db = firestore.client()
+        logger.info("✅ Firestore client created")
+    
+    return _db
 
-API_TITLE = "Löneprocess Digital Checklista API v3.0"
-API_VERSION = "3.0.0"
-API_DESCRIPTION = """
-# Löneprocess Digital Checklista API v3.0
+# For backward compatibility - but this will trigger lazy init
+@property
+def db():
+    """Firestore database client (lazy initialized)"""
+    return get_db()
 
-Komplett API för löneprocesshantering med integration mot LA-systemet.
-
-## 🎯 Funktioner
-
-### Original Features
-* **Aktivitetshantering** - CRUD operations för löneprocessaktiviteter
-* **Löneperiodhantering** - Hantera löneperioder och deras status
-* **Framdriftsspårning** - Mät completion percentage för löneperioder
-* **Assignments** - Koppla aktiviteter till löneperioder
-
-### LA Integration Features
-* **LA Mock API** - Simulerar LA-systemets endpoints för utveckling
-* **Employee Sync** - Hämta och synka anställda från LA
-* **Period Mapping** - Koppla era perioder till LA:s löneperioder
-* **Absence Tracking** - Frånvaro och tidsrapportering från LA
-* **Vacation Balances** - Semestersaldon och intjänande
-* **Benefits** - Förmånshantering (bil, bostad, etc)
-* **Tax Info** - Skatter och avdrag
-* **Sync Logging** - Spåra alla synkningar
-
-### NYA v3.0 - KRITISKA FUNKTIONER
-* **✨ FELLISTOR** - Hantera fel från löneberäkningar (Must-have!)
-* **✨ KÖRNINGSSTATUS** - Status för provlön och slutlön (Must-have!)
-
-## 📚 Användning
-
-**Development Mode (Mock):** Sätt `LA_USE_MOCK=true`  
-**Production Mode:** Sätt `LA_USE_MOCK=false` och konfigurera `LA_API_URL` och `LA_API_KEY`
-
-## 🏗️ Arkitektur
-
-Version 3.0 använder modulär struktur för bättre underhåll och skalbarhet.
-"""
-
-# ============================================================================
-# CORS CONFIGURATION
-# ============================================================================
-
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "*").split(",")
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_METHODS = ["*"]
-CORS_ALLOW_HEADERS = ["*"]
+# Export for use in other modules
+__all__ = ['get_db', 'initialize_firebase']

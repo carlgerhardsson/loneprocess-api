@@ -1,0 +1,30 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "functions": [
+    {
+      "source": ".",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.pyc",
+        "__pycache__",
+        "venv",
+        ".venv",
+        "credentials",
+        "database",
+        "docs",
+        "functions",
+        "*.tar",
+        "*.tar.gz",
+        "*.md"
+      ],
+      "runtime": "python311"
+    }
+  ]
+}

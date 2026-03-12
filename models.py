@@ -1,9 +1,9 @@
 """
 Pydantic models for Löneprocess API v3.0
-All request/response schemas
+All request/response schemas - FIXED FOR FIRESTORE
 """
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 from datetime import date
 from enum import Enum
 
@@ -21,6 +21,8 @@ class EmployeeStatus(str, Enum):
 class PeriodStatus(str, Enum):
     planned = "planned"
     active = "active"
+    upcoming = "upcoming"
+    completed = "completed"
     provlon = "provlon"
     slutlon = "slutlon"
     closed = "closed"
@@ -55,7 +57,7 @@ class SyncStatus(str, Enum):
 
 
 # ============================================================================
-# ACTIVITIES MODELS
+# ACTIVITIES MODELS - FIXED FOR FIRESTORE
 # ============================================================================
 
 class ActivityBase(BaseModel):
@@ -63,7 +65,7 @@ class ActivityBase(BaseModel):
     process: Optional[str] = Field(None, max_length=200)
     out_input: Optional[str] = Field(None, max_length=500)
     ska_inga_i_loneperiod: bool = False
-    fas: Optional[int] = None
+    fas: Optional[str] = None  # FIXED: Changed from int to str ("Förberedelse", "Körning", etc)
     roll: Optional[str] = Field(None, max_length=100)
     behov: Optional[str] = None
     effekten_vardet: Optional[str] = None
@@ -71,7 +73,7 @@ class ActivityBase(BaseModel):
     acceptans: Optional[str] = None
     feature_losning: Optional[str] = None
     priority: Optional[int] = Field(None, ge=1, le=5)
-    status: Optional[str] = Field("pending", pattern="^(pending|in_progress|completed|blocked)$")
+    status: Optional[str] = Field("active", pattern="^(active|draft|pending|in_progress|completed|blocked)$")  # FIXED: Added active/draft
 
 
 class ActivityCreate(ActivityBase):
@@ -83,7 +85,7 @@ class ActivityUpdate(BaseModel):
     process: Optional[str] = None
     out_input: Optional[str] = None
     ska_inga_i_loneperiod: Optional[bool] = None
-    fas: Optional[int] = None
+    fas: Optional[str] = None  # FIXED
     roll: Optional[str] = None
     behov: Optional[str] = None
     effekten_vardet: Optional[str] = None
@@ -95,9 +97,9 @@ class ActivityUpdate(BaseModel):
 
 
 class ActivityResponse(ActivityBase):
-    id: int
-    created_at: str
-    updated_at: Optional[str] = None
+    id: str  # FIXED: Changed from int to str
+    created_at: Any  # FIXED: Allow Firestore Timestamp
+    updated_at: Optional[Any] = None  # FIXED: Allow Firestore Timestamp
 
 
 # ============================================================================
@@ -106,9 +108,9 @@ class ActivityResponse(ActivityBase):
 
 class LoneperiodBase(BaseModel):
     name: str = Field(..., max_length=100)
-    start_date: date
-    end_date: date
-    status: str = Field("planned", pattern="^(planned|active|provlon|slutlon|closed)$")
+    start_date: str  # FIXED: Changed from date to str
+    end_date: str  # FIXED: Changed from date to str
+    status: str = Field("planned", pattern="^(planned|active|upcoming|completed|provlon|slutlon|closed)$")
 
 
 class LoneperiodCreate(LoneperiodBase):
@@ -117,17 +119,19 @@ class LoneperiodCreate(LoneperiodBase):
 
 class LoneperiodUpdate(BaseModel):
     name: Optional[str] = None
-    start_date: Optional[date] = None
-    end_date: Optional[date] = None
+    start_date: Optional[str] = None  # FIXED
+    end_date: Optional[str] = None  # FIXED
     status: Optional[str] = None
     completion_percentage: Optional[float] = Field(None, ge=0.0, le=100.0)
 
 
 class LoneperiodResponse(LoneperiodBase):
-    id: int
-    completion_percentage: float
-    created_at: str
-    updated_at: Optional[str] = None
+    id: str  # FIXED
+    year: Optional[int] = None
+    month: Optional[int] = None
+    completion_percentage: Optional[float] = None
+    created_at: Optional[Any] = None  # FIXED
+    updated_at: Optional[Any] = None  # FIXED
 
 
 class LoneperiodProgressResponse(BaseModel):
@@ -158,15 +162,15 @@ class LAEmployeeBase(BaseModel):
     arbl: Optional[str] = None
     anstdat: Optional[str] = None
     avgdat: Optional[str] = None
-    status: EmployeeStatus = EmployeeStatus.active
+    status: str = "active"  # FIXED: Removed EmployeeStatus enum
     heltidslon: Optional[float] = None
     syssgrad: Optional[float] = None
 
 
 class LAEmployeeResponse(LAEmployeeBase):
-    id: int
-    last_synced_at: Optional[str] = None
-    created_at: str
+    id: str  # FIXED
+    last_synced_at: Optional[Any] = None  # FIXED
+    created_at: Optional[Any] = None  # FIXED
 
 
 # ============================================================================
@@ -176,7 +180,7 @@ class LAEmployeeResponse(LAEmployeeBase):
 class LAAbsenceBase(BaseModel):
     anstnr: str
     absence_code: Optional[str] = None
-    absence_type: Optional[AbsenceType] = None
+    absence_type: Optional[str] = None  # FIXED: Removed enum
     absence_description: Optional[str] = None
     start_date: str
     end_date: str
@@ -244,18 +248,18 @@ class LATaxInfo(BaseModel):
 # ============================================================================
 
 class LACalculationErrorBase(BaseModel):
-    loneperiod_id: Optional[int] = None
+    loneperiod_id: Optional[str] = None  # FIXED
     anstnr: Optional[str] = None
     error_code: str
     error_message: str
     field_name: Optional[str] = None
-    severity: ErrorSeverity
+    severity: str  # FIXED: Removed enum
     behandlat: bool = False
     notes: Optional[str] = None
 
 
 class LACalculationErrorResponse(LACalculationErrorBase):
-    id: int
+    id: str  # FIXED
     is_resolved: bool
     detected_at: str
     resolved_at: Optional[str] = None
@@ -319,7 +323,7 @@ class SyncResponse(BaseModel):
 class LASyncLogEntry(BaseModel):
     id: int
     sync_type: str
-    status: SyncStatus
+    status: str  # FIXED: Removed enum
     records_synced: int
     error_message: Optional[str] = None
     started_at: str

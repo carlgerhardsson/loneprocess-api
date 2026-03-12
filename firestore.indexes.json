@@ -1,0 +1,38 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "fellistor",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "loneperiod_id", "order": "ASCENDING"},
+        {"fieldPath": "severity", "order": "ASCENDING"},
+        {"fieldPath": "detected_at", "order": "DESCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "fellistor",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "loneperiod_id", "order": "ASCENDING"},
+        {"fieldPath": "behandlat", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "fellistor",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "loneperiod_id", "order": "ASCENDING"},
+        {"fieldPath": "is_resolved", "order": "ASCENDING"}
+      ]
+    },
+    {
+      "collectionGroup": "assignments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {"fieldPath": "loneperiod_id", "order": "ASCENDING"},
+        {"fieldPath": "activity_id", "order": "ASCENDING"}
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
