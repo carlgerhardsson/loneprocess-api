@@ -38,8 +38,10 @@ Check deployment status: https://github.com/carlgerhardsson/loneprocess-api/acti
   - Cloud Run Admin
   - Storage Admin
   - Service Account User
-  - **Artifact Registry Writer**
+  - Artifact Registry Writer
+- **Firestore Permissions ✅**
+  - Cloud Datastore User (on Compute Service Account)
 
 ---
 
-**Status:** 🚀 Ready for deployment!
+**Status:** 🚀 Ready for deployment with proper Firestore permissions!
