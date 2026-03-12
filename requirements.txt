@@ -1,5 +1,15 @@
-fastapi>=0.109.0
-uvicorn[standard]>=0.27.0
-pydantic>=2.5.0
-httpx>=0.26.0
-python-multipart>=0.0.6
+# Core FastAPI dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+python-multipart==0.0.6
+
+# Firebase dependencies
+firebase-admin==6.3.0
+
+# Cloud Functions dependencies
+functions-framework==3.*
+asgiref==3.7.2
+
+# Additional dependencies
+python-dateutil==2.8.2
