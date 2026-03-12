@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
 Löneprocess Digital Checklista API v3.0 - Firebase Staging
-Main application file with Firestore backend
+Main application file with Firestore backend + API Key Authentication
 """
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from datetime import datetime
 from typing import Optional, List
@@ -13,22 +13,27 @@ from typing import Optional, List
 from firebase_adapter import FirestoreAdapter
 from models import *
 from rate_limiter import RateLimiter
+from auth_middleware import api_key_auth
 
 # ============================================================================
 # CONFIG
 # ============================================================================
 
 API_TITLE = "Löneprocess Digital Checklista API"
-API_VERSION = "3.0.0-staging"
+API_VERSION = "3.0.1-staging"
 API_DESCRIPTION = """
 Löneprocess Digital Checklista API - Firebase Staging Environment
 
 **Staging miljö för frontend-testning**
 
 - Firestore Database (test data)
-- Firebase Authentication
-- Read-only för externa teams
-- **Rate Limited: 60 requests/minute**
+- **API Key Authentication Required** 🔐
+- Rate Limited: 60 requests/minute
+- Secure HTTPS only
+
+**Authentication:**
+All API endpoints require `X-API-Key` header.
+Contact API administrator for access keys.
 """
 
 CORS_ORIGINS = ["*"]
@@ -63,17 +68,18 @@ db_adapter = FirestoreAdapter()
 
 
 # ============================================================================
-# HEALTH ENDPOINTS
+# HEALTH ENDPOINTS (NO AUTH REQUIRED)
 # ============================================================================
 
 @app.get("/", tags=["Health"])
 def root():
-    """Root endpoint"""
+    """Root endpoint - No authentication required"""
     return {
         "message": "Löneprocess Digital Checklista API v3.0 - Staging",
         "version": API_VERSION,
         "environment": "staging",
         "database": "Firestore",
+        "authentication": "API Key Required (X-API-Key header)",
         "rate_limit": "60 requests/minute",
         "docs": "/docs",
         "health": "/health"
@@ -82,22 +88,24 @@ def root():
 
 @app.get("/health", tags=["Health"])
 def health_check():
-    """Health check endpoint"""
+    """Health check endpoint - No authentication required"""
     return {
         "status": "healthy",
         "version": API_VERSION,
         "environment": "staging",
         "database": "Firestore",
+        "authentication": "API Key Required",
         "rate_limit": "60 requests/minute",
         "service": "Löneprocess API v3.0"
     }
 
 
 # ============================================================================
-# ACTIVITIES ENDPOINTS
+# ACTIVITIES ENDPOINTS (AUTH REQUIRED)
 # ============================================================================
 
-@app.get("/api/v1/activities", response_model=List[ActivityResponse], tags=["Activities"])
+@app.get("/api/v1/activities", response_model=List[ActivityResponse], 
+         dependencies=[Depends(api_key_auth)], tags=["Activities"])
 def get_activities(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
@@ -105,7 +113,7 @@ def get_activities(
     role: Optional[str] = None,
     status: Optional[str] = None
 ):
-    """Hämta aktiviteter med filtrering"""
+    """Hämta aktiviteter med filtrering - Requires API Key"""
     try:
         activities = db_adapter.get_activities(
             skip=skip,
@@ -119,18 +127,20 @@ def get_activities(
         raise HTTPException(status_code=500, detail=f"Fel vid hämtning: {str(e)}")
 
 
-@app.get("/api/v1/activities/{activity_id}", response_model=ActivityResponse, tags=["Activities"])
+@app.get("/api/v1/activities/{activity_id}", response_model=ActivityResponse,
+         dependencies=[Depends(api_key_auth)], tags=["Activities"])
 def get_activity(activity_id: int):
-    """Hämta specifik aktivitet"""
+    """Hämta specifik aktivitet - Requires API Key"""
     activity = db_adapter.get_activity(activity_id)
     if not activity:
         raise HTTPException(status_code=404, detail=f"Aktivitet {activity_id} hittades inte")
     return activity
 
 
-@app.post("/api/v1/activities", response_model=ActivityResponse, status_code=201, tags=["Activities"])
+@app.post("/api/v1/activities", response_model=ActivityResponse, status_code=201,
+          dependencies=[Depends(api_key_auth)], tags=["Activities"])
 def create_activity(activity: ActivityCreate):
-    """Skapa ny aktivitet"""
+    """Skapa ny aktivitet - Requires API Key"""
     try:
         created = db_adapter.create_activity(activity.model_dump())
         return created
@@ -138,35 +148,38 @@ def create_activity(activity: ActivityCreate):
         raise HTTPException(status_code=400, detail=f"Kunde inte skapa aktivitet: {str(e)}")
 
 
-@app.put("/api/v1/activities/{activity_id}", response_model=ActivityResponse, tags=["Activities"])
+@app.put("/api/v1/activities/{activity_id}", response_model=ActivityResponse,
+         dependencies=[Depends(api_key_auth)], tags=["Activities"])
 def update_activity(activity_id: int, activity: ActivityUpdate):
-    """Uppdatera aktivitet"""
+    """Uppdatera aktivitet - Requires API Key"""
     updated = db_adapter.update_activity(activity_id, activity.model_dump(exclude_unset=True))
     if not updated:
         raise HTTPException(status_code=404, detail=f"Aktivitet {activity_id} hittades inte")
     return updated
 
 
-@app.delete("/api/v1/activities/{activity_id}", status_code=204, tags=["Activities"])
+@app.delete("/api/v1/activities/{activity_id}", status_code=204,
+            dependencies=[Depends(api_key_auth)], tags=["Activities"])
 def delete_activity(activity_id: int):
-    """Ta bort aktivitet"""
+    """Ta bort aktivitet - Requires API Key"""
     deleted = db_adapter.delete_activity(activity_id)
     if not deleted:
         raise HTTPException(status_code=404, detail=f"Aktivitet {activity_id} hittades inte")
 
 
 # ============================================================================
-# LONEPERIODS ENDPOINTS
+# LONEPERIODS ENDPOINTS (AUTH REQUIRED)
 # ============================================================================
 
-@app.get("/api/v1/loneperiods", response_model=List[LoneperiodResponse], tags=["Loneperiods"])
+@app.get("/api/v1/loneperiods", response_model=List[LoneperiodResponse],
+         dependencies=[Depends(api_key_auth)], tags=["Loneperiods"])
 def get_loneperiods(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     status: Optional[str] = None,
     year: Optional[int] = None
 ):
-    """Hämta löneperioder"""
+    """Hämta löneperioder - Requires API Key"""
     try:
         periods = db_adapter.get_loneperiods(
             skip=skip,
@@ -179,18 +192,20 @@ def get_loneperiods(
         raise HTTPException(status_code=500, detail=f"Fel vid hämtning: {str(e)}")
 
 
-@app.get("/api/v1/loneperiods/{loneperiod_id}", response_model=LoneperiodResponse, tags=["Loneperiods"])
+@app.get("/api/v1/loneperiods/{loneperiod_id}", response_model=LoneperiodResponse,
+         dependencies=[Depends(api_key_auth)], tags=["Loneperiods"])
 def get_loneperiod(loneperiod_id: int):
-    """Hämta specifik löneperiod"""
+    """Hämta specifik löneperiod - Requires API Key"""
     period = db_adapter.get_loneperiod(loneperiod_id)
     if not period:
         raise HTTPException(status_code=404, detail=f"Löneperiod {loneperiod_id} hittades inte")
     return period
 
 
-@app.post("/api/v1/loneperiods", response_model=LoneperiodResponse, status_code=201, tags=["Loneperiods"])
+@app.post("/api/v1/loneperiods", response_model=LoneperiodResponse, status_code=201,
+          dependencies=[Depends(api_key_auth)], tags=["Loneperiods"])
 def create_loneperiod(loneperiod: LoneperiodCreate):
-    """Skapa ny löneperiod"""
+    """Skapa ny löneperiod - Requires API Key"""
     try:
         data = loneperiod.model_dump()
         # Convert dates to strings
@@ -205,9 +220,10 @@ def create_loneperiod(loneperiod: LoneperiodCreate):
         raise HTTPException(status_code=400, detail=f"Kunde inte skapa löneperiod: {str(e)}")
 
 
-@app.put("/api/v1/loneperiods/{loneperiod_id}", response_model=LoneperiodResponse, tags=["Loneperiods"])
+@app.put("/api/v1/loneperiods/{loneperiod_id}", response_model=LoneperiodResponse,
+         dependencies=[Depends(api_key_auth)], tags=["Loneperiods"])
 def update_loneperiod(loneperiod_id: int, loneperiod: LoneperiodUpdate):
-    """Uppdatera löneperiod"""
+    """Uppdatera löneperiod - Requires API Key"""
     data = loneperiod.model_dump(exclude_unset=True)
     
     # Convert dates to strings
@@ -222,9 +238,10 @@ def update_loneperiod(loneperiod_id: int, loneperiod: LoneperiodUpdate):
     return updated
 
 
-@app.get("/api/v1/loneperiods/{loneperiod_id}/progress", response_model=LoneperiodProgressResponse, tags=["Loneperiods"])
+@app.get("/api/v1/loneperiods/{loneperiod_id}/progress", response_model=LoneperiodProgressResponse,
+         dependencies=[Depends(api_key_auth)], tags=["Loneperiods"])
 def get_loneperiod_progress(loneperiod_id: int):
-    """Hämta framdrift för löneperiod"""
+    """Hämta framdrift för löneperiod - Requires API Key"""
     try:
         progress = db_adapter.get_loneperiod_progress(loneperiod_id)
         return progress
@@ -232,9 +249,10 @@ def get_loneperiod_progress(loneperiod_id: int):
         raise HTTPException(status_code=500, detail=f"Fel vid hämtning: {str(e)}")
 
 
-@app.post("/api/v1/loneperiods/{loneperiod_id}/activities", status_code=201, tags=["Loneperiods"])
+@app.post("/api/v1/loneperiods/{loneperiod_id}/activities", status_code=201,
+          dependencies=[Depends(api_key_auth)], tags=["Loneperiods"])
 def add_activities_to_loneperiod(loneperiod_id: int, request: AddActivitiesRequest):
-    """Lägg till aktiviteter till löneperiod"""
+    """Lägg till aktiviteter till löneperiod - Requires API Key"""
     try:
         added = db_adapter.add_activities_to_loneperiod(loneperiod_id, request.activity_ids)
         return {"message": f"Lade till {added} aktiviteter", "added_count": added}
@@ -243,16 +261,17 @@ def add_activities_to_loneperiod(loneperiod_id: int, request: AddActivitiesReque
 
 
 # ============================================================================
-# LA INTEGRATION - DATA ENDPOINTS
+# LA INTEGRATION - DATA ENDPOINTS (AUTH REQUIRED)
 # ============================================================================
 
-@app.get("/api/v1/la/employees", response_model=List[LAEmployeeResponse], tags=["LA Integration - Data"])
+@app.get("/api/v1/la/employees", response_model=List[LAEmployeeResponse],
+         dependencies=[Depends(api_key_auth)], tags=["LA Integration - Data"])
 def get_la_employees(
     org_kod: Optional[str] = None,
     status: Optional[str] = None,
     limit: int = Query(100, le=1000)
 ):
-    """Hämta anställda från Firestore"""
+    """Hämta anställda från Firestore - Requires API Key"""
     try:
         employees = db_adapter.get_employees(
             org_kod=org_kod,
@@ -265,17 +284,18 @@ def get_la_employees(
 
 
 # ============================================================================
-# v3.0 FELLISTOR ENDPOINTS
+# v3.0 FELLISTOR ENDPOINTS (AUTH REQUIRED)
 # ============================================================================
 
-@app.get("/api/v1/la/fellistor/{loneperiod_id}", response_model=List[LACalculationErrorResponse], tags=["LA Integration - Fellistor"])
+@app.get("/api/v1/la/fellistor/{loneperiod_id}", response_model=List[LACalculationErrorResponse],
+         dependencies=[Depends(api_key_auth)], tags=["LA Integration - Fellistor"])
 def get_fellistor(
     loneperiod_id: int,
     severity: Optional[str] = Query(None, pattern="^(error|warning|info)$"),
     visa_endast_obehandlade: bool = False,
     visa_endast_olosta: bool = False
 ):
-    """Hämta fellista för löneperiod"""
+    """Hämta fellista för löneperiod - Requires API Key"""
     try:
         errors = db_adapter.get_fellistor(
             loneperiod_id=loneperiod_id,
@@ -288,9 +308,10 @@ def get_fellistor(
         raise HTTPException(status_code=500, detail=f"Fel vid hämtning: {str(e)}")
 
 
-@app.get("/api/v1/la/fellistor/{loneperiod_id}/summary", response_model=FellistaSummary, tags=["LA Integration - Fellistor"])
+@app.get("/api/v1/la/fellistor/{loneperiod_id}/summary", response_model=FellistaSummary,
+         dependencies=[Depends(api_key_auth)], tags=["LA Integration - Fellistor"])
 def get_fellista_summary(loneperiod_id: int):
-    """Hämta sammanfattning av fellista"""
+    """Hämta sammanfattning av fellista - Requires API Key"""
     try:
         summary = db_adapter.get_fellista_summary(loneperiod_id)
         return summary
@@ -298,9 +319,10 @@ def get_fellista_summary(loneperiod_id: int):
         raise HTTPException(status_code=500, detail=f"Fel vid hämtning: {str(e)}")
 
 
-@app.patch("/api/v1/la/fellistor/{error_id}", response_model=LACalculationErrorResponse, tags=["LA Integration - Fellistor"])
+@app.patch("/api/v1/la/fellistor/{error_id}", response_model=LACalculationErrorResponse,
+           dependencies=[Depends(api_key_auth)], tags=["LA Integration - Fellistor"])
 def update_fellista_error(error_id: str, update: LACalculationErrorUpdate):
-    """Uppdatera fel i fellistan"""
+    """Uppdatera fel i fellistan - Requires API Key"""
     updated = db_adapter.update_fellista_error(error_id, update.model_dump(exclude_unset=True))
     if not updated:
         raise HTTPException(status_code=404, detail=f"Fel {error_id} hittades inte")
@@ -308,21 +330,23 @@ def update_fellista_error(error_id: str, update: LACalculationErrorUpdate):
 
 
 # ============================================================================
-# v3.0 KÖRNINGSSTATUS ENDPOINTS
+# v3.0 KÖRNINGSSTATUS ENDPOINTS (AUTH REQUIRED)
 # ============================================================================
 
-@app.get("/api/v1/la/periods/{loneperiod_id}/korningsstatus", response_model=KorningsStatusResponse, tags=["LA Integration - Körningsstatus"])
+@app.get("/api/v1/la/periods/{loneperiod_id}/korningsstatus", response_model=KorningsStatusResponse,
+         dependencies=[Depends(api_key_auth)], tags=["LA Integration - Körningsstatus"])
 def get_korningsstatus(loneperiod_id: int):
-    """Hämta körningsstatus för löneperiod"""
+    """Hämta körningsstatus för löneperiod - Requires API Key"""
     status = db_adapter.get_korningsstatus(loneperiod_id)
     if not status:
         raise HTTPException(status_code=404, detail=f"Körningsstatus för {loneperiod_id} hittades inte")
     return status
 
 
-@app.patch("/api/v1/la/periods/{loneperiod_id}/korningsstatus", response_model=KorningsStatusResponse, tags=["LA Integration - Körningsstatus"])
+@app.patch("/api/v1/la/periods/{loneperiod_id}/korningsstatus", response_model=KorningsStatusResponse,
+           dependencies=[Depends(api_key_auth)], tags=["LA Integration - Körningsstatus"])
 def update_korningsstatus(loneperiod_id: int, update: KorningsStatusUpdate):
-    """Uppdatera körningsstatus"""
+    """Uppdatera körningsstatus - Requires API Key"""
     updated = db_adapter.update_korningsstatus(loneperiod_id, update.model_dump(exclude_unset=True))
     if not updated:
         raise HTTPException(status_code=404, detail=f"Körningsstatus för {loneperiod_id} hittades inte")
@@ -342,12 +366,14 @@ if __name__ == "__main__":
     print(f"Environment: Staging")
     print(f"Database: Firestore")
     print(f"Version: {API_VERSION}")
+    print(f"Authentication: API Key Required (X-API-Key header)")
     print(f"Rate Limit: 60 requests/minute")
     
     print("\n📚 Swagger UI: http://localhost:8000/docs")
     print("📖 ReDoc: http://localhost:8000/redoc")
     print("💚 Health: http://localhost:8000/health")
-    print("\n" + "=" * 70)
+    print("\n🔐 Note: API endpoints require X-API-Key header")
+    print("=" * 70)
     print("Startar server...\n")
     
     uvicorn.run(app, host="0.0.0.0", port=8000)
