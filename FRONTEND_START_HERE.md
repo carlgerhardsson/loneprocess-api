@@ -32,13 +32,12 @@ Welcome! This is your central hub for integrating with the Löneprocess Digital 
 
 ### 1. Your API Key
 ```
-Key: wXWoaJ13LTuPVcxqmzLYFKz9euJw_h4V7PkWnEfvONs
-Team: Frontend Team X
+🔐 API key will be provided separately via secure channel
 ```
 
 ### 2. Test Connection
 ```bash
-curl -H "X-API-Key: wXWoaJ13LTuPVcxqmzLYFKz9euJw_h4V7PkWnEfvONs" \
+curl -H "X-API-Key: YOUR_API_KEY_HERE" \
   https://loneprocess-api-922770673146.us-central1.run.app/api/v1/activities
 ```
 

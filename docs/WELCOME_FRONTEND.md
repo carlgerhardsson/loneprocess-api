@@ -26,14 +26,13 @@ The Löneprocess Digital Checklista API provides a comprehensive digital checkli
 - **Response Time:** <200ms average
 
 ### 2. **Your API Key**
-You have been issued a unique API key:
 ```
-Key: wXWoaJ13LTuPVcxqmzLYFKz9euJw_h4V7PkWnEfvONs
-Team: Frontend Team X
-Purpose: Frontend integration and testing
+🔐 Your API key will be provided separately during our onboarding meeting.
+
+For security reasons, API keys are never sent via email or stored in public documentation.
 ```
 
-**⚠️ Security:** Keep this key secure. Do not commit it to version control.
+**⚠️ Security:** Keep your key secure. Do not commit it to version control.
 
 ### 3. **Interactive Documentation**
 Explore and test the API directly in your browser:
@@ -53,18 +52,32 @@ Explore and test the API directly in your browser:
 
 ## 🚀 Quick Start (5 Minutes)
 
-### Step 1: Test the Connection
+### Step 1: Get Your API Key
+
+Your API key will be provided during our onboarding meeting or via a secure channel.
+
+Store it securely:
+
+```bash
+# Add to .env file (never commit this!)
+REACT_APP_LONEPROCESS_API_KEY=your-key-here
+
+# Or for Vue/Vite:
+VITE_LONEPROCESS_API_KEY=your-key-here
+```
+
+### Step 2: Test the Connection
 
 Open your terminal and run:
 
 ```bash
-curl -H "X-API-Key: wXWoaJ13LTuPVcxqmzLYFKz9euJw_h4V7PkWnEfvONs" \
+curl -H "X-API-Key: YOUR_API_KEY_HERE" \
   https://loneprocess-api-922770673146.us-central1.run.app/api/v1/activities
 ```
 
 **Expected:** JSON response with list of activities.
 
-### Step 2: Explore the API
+### Step 3: Explore the API
 
 Visit the interactive documentation:
 ```
@@ -73,7 +86,7 @@ https://loneprocess-api-922770673146.us-central1.run.app/docs
 
 Click "Authorize" and enter your API key to test endpoints directly.
 
-### Step 3: Integrate
+### Step 4: Integrate
 
 Choose your framework and follow the guide:
 
@@ -183,7 +196,7 @@ Feel free to create, update, and delete test data!
 
 When reporting issues, please include:
 
-1. Request details (endpoint, method, headers)
+1. Request details (endpoint, method, headers - **mask your API key!**)
 2. Response details (status code, body)
 3. Environment (browser, framework, version)
 4. Timestamp
@@ -217,11 +230,12 @@ All examples: [FRONTEND_INTEGRATION_GUIDE.md#code-examples](FRONTEND_INTEGRATION
 
 Before you start developing:
 
-- [ ] Read this welcome document
+- [ ] Receive your API key (via secure channel)
 - [ ] Test API connection with curl
 - [ ] Explore Swagger UI
 - [ ] Review [FRONTEND_INTEGRATION_GUIDE.md](FRONTEND_INTEGRATION_GUIDE.md)
-- [ ] Set up API key in environment variables
+- [ ] Set up API key in environment variables (.env file)
+- [ ] Add .env to .gitignore
 - [ ] Implement error handling
 - [ ] Add rate limit handling
 - [ ] Write tests
@@ -230,13 +244,16 @@ Before you start developing:
 
 ## 🎯 Next Steps
 
-1. **Read the Integration Guide**
-   - [FRONTEND_INTEGRATION_GUIDE.md](FRONTEND_INTEGRATION_GUIDE.md)
-   - Focus on your framework (React/Vue/JS)
+1. **Attend Onboarding Meeting**
+   - Receive your API key securely
+   - Walk through the API together
+   - Test connection in real-time
+   - Ask any questions
 
 2. **Set Up Your Environment**
    ```bash
-   echo "REACT_APP_LONEPROCESS_API_KEY=wXWoaJ13LTuPVcxqmzLYFKz9euJw_h4V7PkWnEfvONs" >> .env
+   # After receiving your key in the meeting:
+   echo "REACT_APP_LONEPROCESS_API_KEY=your-actual-key" >> .env
    echo ".env" >> .gitignore
    ```
 
